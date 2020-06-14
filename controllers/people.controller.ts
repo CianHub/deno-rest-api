@@ -16,18 +16,51 @@ let people: Person[] = [
   { id: "1", name: "Cian", age: 28, hairColor: "black" },
 ];
 
-export const getPeople = ({ response }: { response: any }) => {
-  response.status = 200;
-  response.body = {
-    "success": true,
-    "data": people,
-  };
+export const getPeople = async ({ response }: { response: any }) => {
+  try {
+    // connect to db
+    await client.connect();
+
+    // query db for all people
+    const result = await client.query("SELECT * FROM people");
+
+    // Format returned data
+    const people: Person[] = [];
+
+    result.rows.map((rowData: any[]) => {
+      const person: Person = {
+        id: rowData[0],
+        name: rowData[1],
+        age: rowData[2],
+        hairColor: rowData[3],
+      };
+
+      people.push(person);
+    });
+
+    response.status = 200;
+    response.body = {
+      "success": true,
+      "data": people,
+    };
+  } catch (err) {
+    // set error response
+    response.status = 400;
+    response.body = {
+      "success": false,
+      "msg": err.toString(),
+    };
+  } finally {
+    // end db connection
+    await client.end();
+  }
 };
 
 export const addPerson = async (
   { request, response }: { request: any; response: any },
 ) => {
   const body = await request.body();
+  const person = body.value;
 
   if (!request.hasBody) {
     response.status = 400;
@@ -36,15 +69,35 @@ export const addPerson = async (
       "msg": "No data",
     };
   } else {
-    const person: Person = body.value;
-    person.id = v4.generate();
-    people.push(person);
+    try {
+      // connect to db
+      await client.connect();
 
-    response.status = 201;
-    response.body = {
-      "success": true,
-      "data": person,
-    };
+      // add new person to db
+      const result = await client.query(
+        "INSERT INTO people(name,age,haircolor) VALUES($1,$2,$3)",
+        person.name,
+        person.age,
+        person.hairColor,
+      );
+
+      // set response
+      response.status = 201;
+      response.body = {
+        "success": true,
+        "data": person,
+      };
+    } catch (err) {
+      // set error response
+      response.status = 400;
+      response.body = {
+        "success": false,
+        "msg": err.toString(),
+      };
+    } finally {
+      // end db connection
+      await client.end();
+    }
   }
 };
 
