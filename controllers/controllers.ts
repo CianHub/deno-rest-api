@@ -2,7 +2,7 @@ import { v4 } from "https://deno.land/std/uuid/mod.ts";
 
 import Person from "../models/person.model.ts";
 
-const people: Person[] = [
+let people: Person[] = [
   { id: "1", name: "Cian", age: 28, hairColor: "black" },
 ];
 
@@ -87,8 +87,10 @@ export const updatePerson = async (
     } = body.value;
 
     updatedPerson.id = params.id;
-    const idx = people.findIndex((person) => person.id === params.id);
-    people[idx] = updatedPerson;
+
+    people = people.map((person: Person) =>
+      person = person.id === params.id ? updatedPerson : person
+    );
 
     response.status = 201;
     response.body = {
