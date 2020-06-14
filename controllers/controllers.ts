@@ -11,7 +11,7 @@ export const getPeople = ({ response }: { response: any }) => {
   };
 };
 
-export const getPerson = ({ response }: { response: any }) => {
+export const addPerson = ({ response }: { response: any }) => {
   response.status = 200;
   response.body = {
     "success": true,
@@ -19,7 +19,7 @@ export const getPerson = ({ response }: { response: any }) => {
   };
 };
 
-export const addPerson = (
+export const getPerson = (
   { params, response }: { response: any; params: { id: string } },
 ) => {
   const person: Person | undefined = people.find((person: Person) =>

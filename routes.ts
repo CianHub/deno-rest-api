@@ -9,10 +9,11 @@ import {
 
 const router = new Router();
 
-router.get("/api/hello-world", getPeople)
+router
   .get("/api/hello-world/:id", getPerson)
-  .post("/api/hello-world", addPerson)
   .put("/api/hello-world:id", updatePerson)
-  .delete("/api/hello-world:id", deletePerson);
+  .delete("/api/hello-world:id", deletePerson)
+  .get("/api/hello-world", getPeople)
+  .post("/api/hello-world", addPerson);
 
 export default router;
