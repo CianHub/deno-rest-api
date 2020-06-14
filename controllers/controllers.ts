@@ -100,9 +100,26 @@ export const updatePerson = async (
   }
 };
 
-export const deletePerson = ({ response }: { response: any }) => {
-  response.body = {
-    "success": true,
-    "data": people,
-  };
+export const deletePerson = (
+  { params, response }: { params: { id: string }; response: any },
+) => {
+  const person: Person | undefined = people.find((person: Person) =>
+    person.id === params.id
+  );
+
+  if (!person) {
+    response.status = 400;
+    response.body = {
+      "success": false,
+      "msg": "No data",
+    };
+  } else {
+    people = people.filter((person: Person) => person.id !== params.id);
+
+    response.status = 200;
+    response.body = {
+      "success": true,
+      "data": people,
+    };
+  }
 };
