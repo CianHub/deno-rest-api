@@ -5,10 +5,12 @@ import {
   addPerson,
   deletePerson,
   updatePerson,
-} from "./controllers/controllers.ts";
+} from "./controllers/people.controller.ts";
 
+// Create router object
 const router = new Router();
 
+// Set the endpoints
 router
   .get("/api/hello-world/:id", getPerson)
   .put("/api/hello-world/:id", updatePerson)

@@ -1,12 +1,23 @@
 import { v4 } from "https://deno.land/std/uuid/mod.ts";
+import { Client } from "https://deno.land/x/postgres/mod.ts";
 
 import Person from "../models/person.model.ts";
+
+// connect to db
+const client = new Client({
+  user: Deno.env.get("dbUser"),
+  database: Deno.env.get("dbName"),
+  password: Deno.env.get("dbPassword"),
+  hostname: Deno.env.get("dbHostname"),
+  port: 5432,
+});
 
 let people: Person[] = [
   { id: "1", name: "Cian", age: 28, hairColor: "black" },
 ];
 
 export const getPeople = ({ response }: { response: any }) => {
+  response.status = 200;
   response.body = {
     "success": true,
     "data": people,
