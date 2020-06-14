@@ -140,7 +140,7 @@ export const getPerson = async (
     }
   } catch (err) {
     // set error response
-    response.status = 500;
+    response.status = 404;
     response.body = {
       "success": false,
       "msg": err.toString(),
@@ -158,37 +158,63 @@ export const updatePerson = async (
     response: any;
   },
 ) => {
-  const body = await request.body();
+  let person: Person;
 
-  const person: Person | undefined = people.find((person: Person) =>
-    person.id === params.id
-  );
+  // check if the person exists
+  // this will modify and return the response it recieves
+  await getPerson({ params: { "id": params.id }, response });
 
-  if (!request.hasBody || !person) {
-    response.status = 400;
+  // if the person was not found
+  if (response.status === 404) {
     response.body = {
       "success": false,
-      "msg": "No data",
+      "msg": response.body.msg,
     };
   } else {
-    const updatedPerson: {
-      name?: string;
-      age?: number;
-      hairColor?: string;
-      id?: string;
-    } = body.value;
+    const body = await request.body();
 
-    updatedPerson.id = params.id;
+    // if new data not sent
+    if (!request.hasBody) {
+      response.status = 400;
+      response.body = {
+        "success": false,
+        "msg": "No data",
+      };
+    } else {
+      try {
+        // connect to db
+        await client.connect();
 
-    people = people.map((person: Person) =>
-      person = person.id === params.id ? updatedPerson : person
-    );
+        // get new data
+        const person: Person = body.value;
 
-    response.status = 201;
-    response.body = {
-      "success": true,
-      "data": updatedPerson,
-    };
+        // update person in db with new data
+        const result = await client.query(
+          "UPDATE people SET name=$1, age=$2, haircolor=$3 WHERE id=$4",
+          person.name,
+          person.age,
+          person.hairColor,
+          params.id,
+        );
+
+        // set response
+        response.status = 200;
+        response.body = {
+          "success": true,
+          "data": person,
+        };
+      } catch (err) {
+        // set error response
+        response.status = 400;
+        response.body = {
+          "success": false,
+          "msg": err.toString(),
+        };
+      } finally {
+        // end db connection
+        await client.end();
+      }
+    }
   }
 };
 
