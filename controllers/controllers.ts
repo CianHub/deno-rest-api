@@ -10,3 +10,31 @@ export const getPeople = ({ response }: { response: any }) => {
     "data": people,
   };
 };
+
+export const getPerson = ({ response }: { response: any }) => {
+  response.body = {
+    "success": true,
+    "data": people,
+  };
+};
+
+export const addPerson = ({ response }: { response: any }) => {
+  response.body = {
+    "success": true,
+    "data": people,
+  };
+};
+
+export const updatePerson = ({ response }: { response: any }) => {
+  response.body = {
+    "success": true,
+    "data": people,
+  };
+};
+
+export const deletePerson = ({ response }: { response: any }) => {
+  response.body = {
+    "success": true,
+    "data": people,
+  };
+};
