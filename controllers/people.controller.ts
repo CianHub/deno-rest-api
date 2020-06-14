@@ -45,7 +45,7 @@ export const getPeople = async ({ response }: { response: any }) => {
     };
   } catch (err) {
     // set error response
-    response.status = 400;
+    response.status = 500;
     response.body = {
       "success": false,
       "msg": err.toString(),
@@ -101,25 +101,53 @@ export const addPerson = async (
   }
 };
 
-export const getPerson = (
+export const getPerson = async (
   { params, response }: { response: any; params: { id: string } },
 ) => {
-  const person: Person | undefined = people.find((person: Person) =>
-    person.id === params.id
-  );
+  try {
+    // connect to db
+    await client.connect();
 
-  if (person) {
-    response.status = 200;
-    response.body = {
-      "success": true,
-      "data": person,
-    };
-  } else {
-    response.status = 404;
+    // query db for person
+    const result = await client.query(
+      "SELECT * FROM people WHERE id=($1)",
+      params.id,
+    );
+
+    // Handle person not found
+    if (result.rows.toString() === "") {
+      response.status = 404;
+      response.body = {
+        "success": false,
+        "msg": "No person found",
+      };
+    } else {
+      // Format returned data
+      const person: Person = {};
+
+      result.rows.forEach((rowData: any[]) => {
+        person.id = rowData[0];
+        person.name = rowData[1];
+        person.age = rowData[2];
+        person.hairColor = rowData[3];
+      });
+
+      response.status = 201;
+      response.body = {
+        "success": true,
+        "data": person,
+      };
+    }
+  } catch (err) {
+    // set error response
+    response.status = 500;
     response.body = {
       "success": false,
-      "msg": "No person found",
+      "msg": err.toString(),
     };
+  } finally {
+    // end db connection
+    await client.end();
   }
 };
 
