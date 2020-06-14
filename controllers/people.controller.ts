@@ -158,8 +158,6 @@ export const updatePerson = async (
     response: any;
   },
 ) => {
-  let person: Person;
-
   // check if the person exists
   // this will modify and return the response it recieves
   await getPerson({ params: { "id": params.id }, response });
@@ -218,26 +216,42 @@ export const updatePerson = async (
   }
 };
 
-export const deletePerson = (
+export const deletePerson = async (
   { params, response }: { params: { id: string }; response: any },
 ) => {
-  const person: Person | undefined = people.find((person: Person) =>
-    person.id === params.id
-  );
+  // check if the person exists
+  // this will modify and return the response it recieves
+  await getPerson({ params: { "id": params.id }, response });
 
-  if (!person) {
-    response.status = 400;
+  // if the person was not found
+  if (response.status === 404) {
     response.body = {
       "success": false,
-      "msg": "No data",
+      "msg": response.body.msg,
     };
   } else {
-    people = people.filter((person: Person) => person.id !== params.id);
+    try {
+      await client.connect();
+      const result = await client.query(
+        "DELETE FROM people WHERE id=$1",
+        params.id,
+      );
 
-    response.status = 200;
-    response.body = {
-      "success": true,
-      "data": people,
-    };
+      response.status = 204;
+      response.body = {
+        "success": true,
+        "msg": "Successfully deleted",
+      };
+    } catch (err) {
+      // set error response
+      response.status = 400;
+      response.body = {
+        "success": false,
+        "msg": err.toString(),
+      };
+    } finally {
+      // end db connection
+      await client.end();
+    }
   }
 };
