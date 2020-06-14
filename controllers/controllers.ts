@@ -3,7 +3,7 @@ import { v4 } from "https://deno.land/std/uuid/mod.ts";
 import Person from "../models/person.model.ts";
 
 const people: Person[] = [
-  { id: 1, name: "Cian", age: 28, hairColor: "black" },
+  { id: "1", name: "Cian", age: 28, hairColor: "black" },
 ];
 
 export const getPeople = ({ response }: { response: any }) => {
@@ -59,11 +59,43 @@ export const getPerson = (
   }
 };
 
-export const updatePerson = ({ response }: { response: any }) => {
-  response.body = {
-    "success": true,
-    "data": people,
-  };
+export const updatePerson = async (
+  { params, request, response }: {
+    params: { id: string };
+    request: any;
+    response: any;
+  },
+) => {
+  const body = await request.body();
+
+  const person: Person | undefined = people.find((person: Person) =>
+    person.id === params.id
+  );
+
+  if (!request.hasBody || !person) {
+    response.status = 400;
+    response.body = {
+      "success": false,
+      "msg": "No data",
+    };
+  } else {
+    const updatedPerson: {
+      name?: string;
+      age?: number;
+      hairColor?: string;
+      id?: string;
+    } = body.value;
+
+    updatedPerson.id = params.id;
+    const idx = people.findIndex((person) => person.id === params.id);
+    people[idx] = updatedPerson;
+
+    response.status = 201;
+    response.body = {
+      "success": true,
+      "data": updatedPerson,
+    };
+  }
 };
 
 export const deletePerson = ({ response }: { response: any }) => {

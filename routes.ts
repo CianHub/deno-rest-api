@@ -11,8 +11,8 @@ const router = new Router();
 
 router
   .get("/api/hello-world/:id", getPerson)
-  .put("/api/hello-world:id", updatePerson)
-  .delete("/api/hello-world:id", deletePerson)
+  .put("/api/hello-world/:id", updatePerson)
+  .delete("/api/hello-world/:id", deletePerson)
   .get("/api/hello-world", getPeople)
   .post("/api/hello-world", addPerson);
 
